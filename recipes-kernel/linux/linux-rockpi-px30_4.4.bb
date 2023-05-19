@@ -1,5 +1,7 @@
 DESCRIPTION = "Linux kernel for RockPi-PX30"
 
+inherit kernel
+inherit python3native
 require recipes-kernel/linux/linux-yocto.inc
 
 # We need mkimage for the overlays
@@ -24,6 +26,13 @@ PV = "${LINUX_VERSION}"
 # Include only supported boards for now
 COMPATIBLE_MACHINE = "(px30|rk3036|rk3066|rk3288|rk3328|rk3399|rk3308)"
 deltask kernel_configme
+
+# Make sure we use /usr/bin/env ${PYTHON_PN} for scripts
+do_patch_append() {
+	for s in `grep -rIl python ${S}/scripts`; do
+		sed -i -e '1s|^#!.*python[23]*|#!/usr/bin/env ${PYTHON_PN}|' $s
+	done
+}
 
 do_compile_append() {
 	oe_runmake dtbs
